@@ -77,9 +77,7 @@ function buildSeed(){
     announcements: [],
     admins: [
       { id:'a1', name:'المدير العام', email:'taher-elbily@gmail.com', password:'037754321', role:'مدير عام', main:true,
-        perms:{ students:true, courses:true, finance:true, quizzes:true, content:true, support:true, security:true } },
-      { id:'a2', name:'مشرف المحتوى', email:'content@demo.com', password:'content123', role:'مشرف محتوى', main:false,
-        perms:{ students:false, courses:true, finance:false, quizzes:true, content:true, support:false, security:false } }
+        perms:{ students:true, courses:true, finance:true, quizzes:true, content:true, support:true, security:true } }
     ],
     activity: [],
     settings: {

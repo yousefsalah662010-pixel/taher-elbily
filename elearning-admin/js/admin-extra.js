@@ -281,7 +281,14 @@ window.ADM_EXTRA = {
           '</div>' +
           '<div class="field"><label>العنوان</label><input id="csAddr" value="' + esc(s.contact.address) + '"></div>' +
           '<button class="btn btn-primary" id="csSave">حفظ الإعدادات</button>' +
-          '<p class="mini-note mt-2">' + ic('info') + ' تظهر هذه البيانات مباشرة في الصفحة الرئيسية والفوتر بعد الحفظ.</p></div></div>';
+          '<p class="mini-note mt-2">' + ic('info') + ' تظهر هذه البيانات مباشرة في الصفحة الرئيسية والفوتر بعد الحفظ.</p></div></div>' +
+          '<div class="panel mt-3" style="max-width:760px"><div class="panel-head"><h3>' + ic('download') + ' النسخ الاحتياطي ونشر البيانات</h3></div><div class="panel-body">' +
+            '<p class="mini-note">' + ic('help') + ' البيانات تُحفظ في متصفح هذا الجهاز فقط. لكي تظهر الكورسات لجميع الطلاب على كل الأجهزة: بعد إضافة الكورسات اضغط "تصدير البيانات" وأرسل الملف الناتج ليتم تحديث الموقع.</p>' +
+            '<div class="flex" style="gap:10px;flex-wrap:wrap">' +
+              '<button class="btn btn-primary" id="bkExport">' + ic('download','ic-sm') + ' تصدير البيانات (JSON)</button>' +
+              '<button class="btn btn-outline" id="bkImportBtn">' + ic('file-text','ic-sm') + ' استيراد نسخة احتياطية</button>' +
+              '<input type="file" id="bkImport" accept=".json,application/json" style="display:none">' +
+            '</div></div></div>';
         $('#csSave').addEventListener('click', () => {
           s.siteName = $('#csName').value.trim() || s.siteName;
           s.heroBtn = $('#csBtn').value.trim() || s.heroBtn;
@@ -297,6 +304,34 @@ window.ADM_EXTRA = {
           logActivity('تحديث إعدادات المحتوى العام');
           toast('تم حفظ الإعدادات — ستظهر في الموقع مباشرة', 'success');
         });
+        $('#bkExport').addEventListener('click', exportBackup);
+        $('#bkImportBtn').addEventListener('click', () => $('#bkImport').click());
+        $('#bkImport').addEventListener('change', function(){
+          const f = this.files[0];
+          if(!f) return;
+          const r = new FileReader();
+          r.onload = () => {
+            try{
+              const parsed = JSON.parse(r.result);
+              if(!parsed || !Array.isArray(parsed.courses) || !Array.isArray(parsed.students)) throw new Error('bad');
+              parsed._v = DB_VERSION;
+              localStorage.setItem(STATE_KEY, JSON.stringify(parsed));
+              logActivity('استيراد نسخة احتياطية من البيانات');
+              toast('تم استيراد البيانات — سيتم تحديث الصفحة', 'success');
+              setTimeout(() => location.reload(), 900);
+            }catch(e){ toast('الملف غير صالح — تأكد أنه ملف النسخة الاحتياطية', 'error'); }
+          };
+          r.readAsText(f);
+        });
+        function exportBackup(){
+          const data = JSON.stringify(dbLoad(), null, 2);
+          const a = document.createElement('a');
+          a.href = URL.createObjectURL(new Blob([data], { type:'application/json' }));
+          a.download = 'taher-backup-' + new Date().toISOString().slice(0,10) + '.json';
+          a.click(); URL.revokeObjectURL(a.href);
+          logActivity('تصدير نسخة احتياطية من البيانات');
+          toast('تم تصدير النسخة الاحتياطية — ابعت الملف لتحديث الموقع', 'success');
+        }
       }
       else if(tab === 'anns'){
         $('#contArea').innerHTML = '<div class="panel"><div class="panel-head"><h3>' + ic('megaphone') + ' شريط الإعلانات في أعلى الموقع</h3></div><div class="panel-body">' +
